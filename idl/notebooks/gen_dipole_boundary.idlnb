@@ -1,0 +1,103 @@
+{
+  "version": "2.0.0",
+  "cells": [
+    {
+      "type": "markdown",
+      "content": [
+        "### Generate magnetic field boundary conditions based on analytical dipolar magnetic field"
+      ],
+      "metadata": {},
+      "outputs": []
+    },
+    {
+      "type": "code",
+      "content": [
+        "; Generate the x, y, and z ranges for a 3D grid",
+        "nx = 128",
+        "ny = 128",
+        "nz = 128",
+        "xmin = -12.",
+        "xmax = 12.",
+        "dx = (xmax - xmin) / (nx - 1)",
+        "ymin = -12.",
+        "ymax = 12.",
+        "dy = (ymax - ymin) / (ny - 1)",
+        "zmin = -3.",
+        "zmax = 9.",
+        "dz = (zmax - zmin) / (nz - 1)",
+        "x_range = findgen(nx, start = xmin, increment = dx)",
+        "y_range = findgen(ny, start = ymin, increment = dy)",
+        "z_range = findgen(nz, start = zmin, increment = dz)"
+      ],
+      "metadata": {},
+      "outputs": []
+    },
+    {
+      "type": "code",
+      "content": [
+        "; get current working directory",
+        "cd, current = cwd",
+        "outdir = cwd + '/idl/data/'"
+      ],
+      "metadata": {},
+      "outputs": []
+    },
+    {
+      "type": "code",
+      "content": [
+        ";define the magnetic field parameters",
+        "m = [1, 0, 0]",
+        "r0 = [0, 0, -5]",
+        ";find the index of the z plane that is closest to the origin",
+        "z0_index = where(abs(z_range) eq min(abs(z_range)))",
+        "z0_index = z0_index[0]",
+        "; set the value of max bz at the z0 plane",
+        "bz0_max = 0.1 ; 1000 G "
+      ],
+      "metadata": {},
+      "outputs": []
+    },
+    {
+      "type": "code",
+      "content": [
+        "B_dipole = FLTARR(3, nx, ny, nz)  ; Prepare a 3D array to store the magnetic field vectors",
+        "; Calculate the magnetic field at each point in the 3D grid",
+        "calc_dipole_mag_field, x_range, y_range, z_range, m, B_dipole, r0=r0, bz0_max = bz0_max"
+      ],
+      "metadata": {},
+      "outputs": []
+    },
+    {
+      "type": "code",
+      "content": [
+        "; Obtain the z component of the magnetic field at the z=0 plane",
+        "bz = reform(B_dipole[2, *, *, *])",
+        "bz0 = bz[*, *, z0_index]",
+        "; Plot the z component of the magnetic field at the z=0 plane",
+        "device, decomposed=0, retain = 2",
+        "loadct, 33",
+        "plot_image, bz0"
+      ],
+      "metadata": {},
+      "outputs": []
+    },
+    {
+      "type": "code",
+      "content": [
+        "; Print the mean value of the z component of the magnetic field at the z=0 plane to check flux balance",
+        "print, mean(bz0)"
+      ],
+      "metadata": {},
+      "outputs": []
+    },
+    {
+      "type": "code",
+      "content": [
+        "; Save the z component of the magnetic field at the z=0 plane to a .sav file",
+        "save, bz0, filename= outdir + 'bz0_dipole.sav'"
+      ],
+      "metadata": {},
+      "outputs": []
+    }
+  ]
+}
